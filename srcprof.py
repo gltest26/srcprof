@@ -13,7 +13,7 @@ import zipfile2 as zipfile
 
 
 # Global settings
-ignoredirs = set(['.hg', '.svn'])
+ignoredirs = set(['.hg', '.svn', '.git', '.bzr']) # Probably we could ignore all directories beginning with a dot.
 extensions = set(['.py', '.rb', '.c', '.cpp', '.h', '.rc', '.rci', '.dlg', '.pas', '.dpr', '.cs'])
 extstats = {}
 verbose = False
