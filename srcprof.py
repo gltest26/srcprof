@@ -9,7 +9,12 @@ for making statistics analysis.
 
 import sys,os,ctypes,codecs
 import math
-import zipfile2 as zipfile
+if 3 <= sys.version_info[0]:
+	is_v3 = True
+	import zipfile
+else:
+	is_v3 = False
+	import zipfile2 as zipfile
 
 
 # Global settings
@@ -27,7 +32,7 @@ enable_html = False
 dist_width = 60 # The width of distribution graph
 
 if len(sys.argv) < 2:
-	print >> sys.stderr, ("usage: [flags] " + sys.argv[0] + " path\n" +
+	helpstr = "usage: [flags] " + sys.argv[0] + " path\n" +(
 	"""
 The source profiler program.
 
@@ -59,26 +64,27 @@ The flags can be combination of the following:
             (non-html: default 60; html: default 200)
 
 """)
-	print >> sys.stderr, 'Default ignoredirs:'
-	print >> sys.stderr, ignoredirs
-	print >> sys.stderr, 'Default extensions:'
-	print >> sys.stderr, extensions
+	helpstr += "Default ignoredirs:\n"
+	helpstr += str(ignoredirs) + "\n"
+	helpstr += "Default extensions:\n"
+	helpstr += str(extensions) + "\n"
+	sys.stderr.write(helpstr)
 	quit(0)
 
 def vprint(arg):
 	if enable_html:
 		s = str(arg)
-		print (s + '<br>').encode('utf-8'),
+		print((s + '<br>').encode('utf-8'))
 	# if it's already an unicode, do not try re-encoding
-	elif type(arg) == unicode:
-		print arg
+	elif ((is_v3 and type(arg) == str) or (not is_v3 and type(arg) == unicode)):
+		print(arg)
 	else:
-		print str(arg).encode('CP932')
+		print((str(arg).encode('CP932')))
 
 # closure to check count of arguments
 def chkopt(i):
 	if len(sys.argv) <= i + 1:
-		print "Premature option: " + val + "\n"
+		print(("Premature option: " + val + "\n"))
 		exit(0)
 	i += 1
 	return sys.argv[i], i
@@ -215,9 +221,14 @@ while i < len(sys.argv):
 		pass
 
 	else:
-		path = arg.decode('CP932')
-		if verbose:
-			vprint('target path: ' + path.encode('CP932'))
+		if 3 <= sys.version_info[0]:
+			path = arg
+			if verbose:
+				vprint('target path: ' + path)
+		else:
+			path = arg.decode('CP932')
+			if verbose:
+				vprint('target path: ' + path.encode('CP932'))
 
 	i += 1
 
@@ -240,6 +251,8 @@ class fileentry:
 	name = ''
 	lines = 0
 	size = 0
+	def __lt__(self,o):
+		return self.name<o.name
 
 filelist = []
 
@@ -271,7 +284,10 @@ class filer:
 
 class deffiler(filer):
 	def open(self, root, f):
-		return open(os.path.join(root, f))
+		if 3 <= sys.version_info[0]:
+			return open(os.path.join(root, f), encoding='latin-1')
+		else:
+			return open(os.path.join(root, f))
 	def getsize(self, root, f):
 		return os.path.getsize(os.path.join(root, f))
 
@@ -310,9 +326,9 @@ def process_file_list(root, files, filer):
 
 		if listing:
 			if enable_html:
-				print('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>'.format(len(filelist), linecount, filesize, filepath.encode('utf-8')))
+				print(('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>'.format(len(filelist), linecount, filesize, filepath.encode('utf-8'))))
 			else:
-				print('{0}\t{1:5}\t{2}'.format(len(filelist) + 1, linecount, filepath.encode('CP932')))
+				print(('{0}\t{1:5}\t{2}'.format(len(filelist) + 1, linecount, filepath.encode('CP932'))))
 
 		fe = fileentry()
 		fe.name = filepath
@@ -330,12 +346,12 @@ def process_file_list(root, files, filer):
 
 if listing:
 	if enable_html:
-		print "<h1>File list in \"" + path.encode('UTF-8') + "\"</h1>"
-		print '<table border="1" cellspacing="0" cellpadding="1">'
-		print "<tr><th>No.</th><th>lines</th><th>size</th><th>name</th></tr>"
+		print(b"<h1>File list in \"" + path.encode('UTF-8') + b"\"</h1>")
+		print('<table border="1" cellspacing="0" cellpadding="1">')
+		print("<tr><th>No.</th><th>lines</th><th>size</th><th>name</th></tr>")
 	else:
-		print "Profiling files in \"" + path + "\"...\n"
-		print "No.\tlines\tname\n"
+		print(("Profiling files in \"" + path + "\"...\n"))
+		print("No.\tlines\tname\n")
 
 
 for root, dirs, files in os.walk(path):
@@ -355,7 +371,7 @@ for root, dirs, files in os.walk(path):
 				zf = zipfile.ZipFile(filepath)
 				process_file_list(filepath, zf.namelist(), zipfiler(zf))
 			except:
-				print "exception in file ", filepath
+				print(("exception in file ", filepath))
 				raise
 
 	process_file_list(root, files, deffiler())
@@ -401,15 +417,15 @@ while 0 < path.rfind('/'):
 		zipenter(path, uppath.replace('\\', '/'))
 
 if listing and enable_html:
-	print "</table><hr>"
+	print("</table><hr>")
 
 
 
 if summary:
 	if enable_html:
-		print "<h1>Summary</h1>"
-		print '<table border="1" cellspacing="0" cellpadding="1">'
-		print "<tr><th>extension</th>" + srcstats.htmlheader() + "</tr>"
+		print("<h1>Summary</h1>")
+		print('<table border="1" cellspacing="0" cellpadding="1">')
+		print(("<tr><th>extension</th>" + srcstats.htmlheader() + "</tr>"))
 	else:
 		print("""
 --------------------------
@@ -418,36 +434,36 @@ if summary:
 """)
 
 	extsum = srcstats()
-	for ext,l in extstats.items():
+	for ext,l in list(extstats.items()):
 		if enable_html:
-			print("<tr><td>" + ext + '</td>' + l.tohtml() + "</tr>")
+			print(("<tr><td>" + ext + '</td>' + l.tohtml() + "</tr>"))
 		else:
-			print(ext + ': ' + l.tostring())
+			print((ext + ': ' + l.tostring()))
 		extsum.files += l.files
 		extsum.lines += l.lines
 		extsum.size += l.size
 
 	if enable_html:
-		print('<tr><td>total</td>' + extsum.tohtml() + '</tr>')
+		print(('<tr><td>total</td>' + extsum.tohtml() + '</tr>'))
 	else:
-		print('total: ' + extsum.tostring())
+		print(('total: ' + extsum.tostring()))
 
 	if enable_html:
-		print "</table><hr>"
+		print("</table><hr>")
 
 
 
 if 0 < ranking:
 	if enable_html:
-		print "<h1>Top {0} files</h1>".format(ranking)
-		print '<table border="1" cellspacing="0" cellpadding="1">'
-		print "<tr><th>No.</th><th>lines</th><th>size</th><th>name</th></tr>"
+		print(("<h1>Top {0} files</h1>".format(ranking)))
+		print('<table border="1" cellspacing="0" cellpadding="1">')
+		print("<tr><th>No.</th><th>lines</th><th>size</th><th>name</th></tr>")
 	else:
-		print ("""
+		print(("""
 --------------------------
       Top {0} files
 --------------------------
-""".format(ranking))
+""".format(ranking)))
 
 	filelist.sort(reverse = 1)
 	i = 0
@@ -456,17 +472,17 @@ if 0 < ranking:
 		if key == 0 or ranking <= i:
 			break
 		if enable_html:
-			print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>".format(
-				i, str(key), fe.size, fe.name.encode('utf-8')))
+			print(("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>".format(
+				i, str(key), fe.size, fe.name.encode('utf-8'))))
 		else:
-			print str(key) + ": " + fe.name
+			print((str(key) + ": " + fe.name))
 
 	if enable_html:
-		print "</table><hr>"
+		print("</table><hr>")
 
 """
-print "total directories: " + str(i) + ", files: " + str(dircount)
-print "sorting order by file count"
+print("total directories: " + str(i) + ", files: " + str(dircount))
+print("sorting order by file count")
 
 dirlist.sort(reverse = 1)
 i = 0
@@ -475,13 +491,13 @@ for key,s in dirlist:
 	i += 1
 	if key == 0 or 80 <= i:
 		break
-	print str(key) + ": " + s
+	print(str(key) + ": " + s)
 """
 
 if enable_distrib:
 	cell = 1
 	base = math.sqrt(2)
-	distrib = range(31)
+	distrib = list(range(31))
 	for i in distrib:
 		distrib[i] = 0
 	for key,s in filelist:
@@ -498,8 +514,8 @@ if enable_distrib:
 	maxdirs = math.log(maxdirs)+1
 
 	if enable_html:
-		print "<h1>Distribution</h1>"
-		print '<table border="1" cellspacing="0" cellpadding="1">'
+		print("<h1>Distribution</h1>")
+		print('<table border="1" cellspacing="0" cellpadding="1">')
 	else:
 		print ("""
 --------------------------
@@ -510,25 +526,25 @@ if enable_distrib:
 	for i in range(2,len(distrib)):
 		s = ""
 		if enable_html:
-			print '''<tr><td align="right">{0:5}-{1:5} {2:3}</td>
+			print(('''<tr><td align="right">{0:5}-{1:5} {2:3}</td>
 <td><div style="background-color:#{4:02x}007f;width:{3}px;">&nbsp;</div></td></tr>'''.format(
 				int(pow(base, ((i - 1) * cell))),
 				int(pow(base, ((i) * cell))) - 1,
 				str(distrib[i]),
 				(int((math.log(distrib[i])+1) * dist_width / maxdirs)) if distrib[i] != 0 else 0,
-				i * 255 / len(distrib))
+				int(i * 255 / len(distrib)))))
 		else:
 			if 0 < maxdirs and i != 0 and distrib[i] != 0:
 				for j in range(int((math.log(distrib[i])+1) * dist_width / maxdirs)):
 					s += "*"
 
-			print "{0:5}-{1:5} {2:3}".format(
+			print(("{0:5}-{1:5} {2:3}".format(
 		                int(pow(base, ((i - 1) * cell))),
 		                int(pow(base, ((i) * cell))) - 1,
-		                str(distrib[i])) + ":" + s
+		                str(distrib[i])) + ":" + s))
 
 	if enable_html:
-		print "</table>"
+		print("</table>")
 
 if enable_html:
 	print("""
