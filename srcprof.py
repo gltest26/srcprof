@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: CP932 -*-
 """
 The source profiler program.
 
@@ -74,7 +73,7 @@ The flags can be combination of the following:
 def vprint(arg):
 	if enable_html:
 		s = str(arg)
-		print((s + '<br>').encode('utf-8'))
+		print(s + '<br>')
 	# if it's already an unicode, do not try re-encoding
 	elif ((is_v3 and type(arg) == str) or (not is_v3 and type(arg) == unicode)):
 		print(arg)
@@ -326,9 +325,9 @@ def process_file_list(root, files, filer):
 
 		if listing:
 			if enable_html:
-				print(('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>'.format(len(filelist), linecount, filesize, filepath.encode('utf-8'))))
+				print(('<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>'.format(len(filelist), linecount, filesize, filepath)))
 			else:
-				print(('{0}\t{1:5}\t{2}'.format(len(filelist) + 1, linecount, filepath.encode('CP932'))))
+				print(('{0}\t{1:5}\t{2}'.format(len(filelist) + 1, linecount, filepath)))
 
 		fe = fileentry()
 		fe.name = filepath
@@ -346,7 +345,7 @@ def process_file_list(root, files, filer):
 
 if listing:
 	if enable_html:
-		print(b"<h1>File list in \"" + path.encode('UTF-8') + b"\"</h1>")
+		print("<h1>File list in \"" + path + "\"</h1>")
 		print('<table border="1" cellspacing="0" cellpadding="1">')
 		print("<tr><th>No.</th><th>lines</th><th>size</th><th>name</th></tr>")
 	else:
@@ -473,7 +472,7 @@ if 0 < ranking:
 			break
 		if enable_html:
 			print(("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td></tr>".format(
-				i, str(key), fe.size, fe.name.encode('utf-8'))))
+				i, str(key), fe.size, fe.name)))
 		else:
 			print((str(key) + ": " + fe.name))
 
