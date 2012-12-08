@@ -14,7 +14,7 @@ import zipfile2 as zipfile
 
 # Global settings
 ignoredirs = set(['.hg', '.svn', '.git', '.bzr']) # Probably we could ignore all directories beginning with a dot.
-extensions = set(['.py', '.rb', '.c', '.cpp', '.h', '.rc', '.rci', '.dlg', '.pas', '.dpr', '.cs'])
+extensions = set(['.pl', '.py', '.rb', '.c', '.cpp', '.h', '.rc', '.rci', '.dlg', '.pas', '.dpr', '.cs'])
 extstats = {}
 verbose = False
 listing = True
@@ -290,7 +290,7 @@ def process_file_list(root, files, filer):
 		if root[-1] == '/' or root[-1] == '\\':
 			filepath = root + f
 		else:
-			filepath = root + '/' + f
+			filepath = root + os.sep + f
 		fp = filer.open(root, f)
 		linecount = 0
 		for line in fp:
@@ -332,9 +332,10 @@ for root, dirs, files in os.walk(path):
 	dirlist.append((len(files), root))
 	dircount += len(files)
 
-	if os.path.split(root)[1] in ignoredirs:
-		vprint('skipping ' + root)
-		continue
+	for dir in ignoredirs:
+		if dir in dirs:
+			vprint("skipping " + os.path.join(root, dir))
+			dirs.remove(dir)
 
 	for f in files:
 		ext = os.path.splitext(f)[1].lower()
