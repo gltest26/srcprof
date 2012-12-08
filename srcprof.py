@@ -24,7 +24,7 @@ ranking = 10
 enable_distrib = True
 zipfile_encoding = 'CP932'
 enable_html = False
-
+dist_width = 60 # The width of distribution graph
 
 if len(sys.argv) < 2:
 	print >> sys.stderr, ("usage: [flags] " + sys.argv[0] + " path\n" +
@@ -55,6 +55,8 @@ The flags can be combination of the following:
     -E enc  Set Zipfile entry file encoding to enc. (default CP932)
     +h      Enable HTML output
     -h      Disable HTML output (default)
+    -w wid  Set distribution graph width in chars or pixels
+            (non-html: default 60; html: default 200)
 
 """)
 	print >> sys.stderr, 'Default ignoredirs:'
@@ -97,10 +99,12 @@ while i < len(sys.argv):
 	arg = sys.argv[i]
 	if arg == '+h':
 		enable_html = True
+		dist_width = 300
 		if verbose:
 			vprint('HTML flag ON')
 	elif arg == '-h':
 		enable_html = False
+		dist_width = 60
 		if verbose:
 			vprint('HTML flag OFF')
 	i += 1
@@ -191,6 +195,12 @@ while i < len(sys.argv):
 		enable_distrib = False
 		if verbose:
 			vprint('Distribution graph flag OFF')
+
+	elif arg == '-w':
+		value, i = chkopt(i)
+		dist_width = int(value)
+		if verbose:
+			vprint('Set distribution graph width to ' + str(dist_width))
 
 	elif arg == '-E':
 		value, i = chkopt(i)
@@ -489,7 +499,7 @@ if enable_distrib:
 
 	if enable_html:
 		print "<h1>Distribution</h1>"
-		print "<pre>"
+		print '<table border="1" cellspacing="0" cellpadding="1">'
 	else:
 		print ("""
 --------------------------
@@ -499,17 +509,26 @@ if enable_distrib:
 
 	for i in range(2,len(distrib)):
 		s = ""
-		if 0 < maxdirs and i != 0 and distrib[i] != 0:
-			for j in range(int((math.log(distrib[i])+1) * 60 / maxdirs)):
-				s += "*"
-		
-		print "{0:5}-{1:5} {2:3}".format(
-	                int(pow(base, ((i - 1) * cell))),
-	                int(pow(base, ((i) * cell))) - 1,
-	                str(distrib[i])) + ":" + s
+		if enable_html:
+			print '''<tr><td align="right">{0:5}-{1:5} {2:3}</td>
+<td><div style="background-color:#{4:02x}007f;width:{3}px;">&nbsp;</div></td></tr>'''.format(
+				int(pow(base, ((i - 1) * cell))),
+				int(pow(base, ((i) * cell))) - 1,
+				str(distrib[i]),
+				(int((math.log(distrib[i])+1) * dist_width / maxdirs)) if distrib[i] != 0 else 0,
+				i * 255 / len(distrib))
+		else:
+			if 0 < maxdirs and i != 0 and distrib[i] != 0:
+				for j in range(int((math.log(distrib[i])+1) * dist_width / maxdirs)):
+					s += "*"
+
+			print "{0:5}-{1:5} {2:3}".format(
+		                int(pow(base, ((i - 1) * cell))),
+		                int(pow(base, ((i) * cell))) - 1,
+		                str(distrib[i])) + ":" + s
 
 	if enable_html:
-		print "</pre>"
+		print "</table>"
 
 if enable_html:
 	print("""
