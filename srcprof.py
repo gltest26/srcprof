@@ -29,6 +29,8 @@ enable_distrib = True
 zipfile_encoding = 'CP932'
 enable_html = False
 dist_width = 60 # The width of distribution graph
+filepath_encoding = 'ascii' # I couldn't find a way to obtain file system's encoding, so here is the default.
+content_encoding = 'latin-1' # File content's encoding cannot be obtained in advance, so here is the default.
 
 if len(sys.argv) < 2:
 	helpstr = "usage: [flags] " + sys.argv[0] + " path\n" +(
@@ -56,13 +58,17 @@ The flags can be combination of the following:
             Set n to 0 to disable ranking. (default 10)
     +d      Enable distribution graph (default)
     -d      Disable distribution graph
-    -E enc  Set Zipfile entry file encoding to enc. (default CP932)
+    -E enc  Set Zipfile entry file encoding to enc. (default {0})
     +h      Enable HTML output
     -h      Disable HTML output (default)
     -w wid  Set distribution graph width in chars or pixels
             (non-html: default 60; html: default 200)
+    -f enc  Set file path's character encoding. (default {1})
+            Setting this should only be necessary in Python 2.*.
+    -c enc  Set file content's character encoding. Necessary to
+            count up lines correctly. (default {2})
 
-""")
+""".format(zipfile_encoding, filepath_encoding, content_encoding))
 	helpstr += "Default ignoredirs:\n"
 	helpstr += str(ignoredirs) + "\n"
 	helpstr += "Default extensions:\n"
@@ -78,7 +84,7 @@ def vprint(arg):
 	elif ((is_v3 and type(arg) == str) or (not is_v3 and type(arg) == unicode)):
 		print(arg)
 	else:
-		print((str(arg).encode('CP932')))
+		print((str(arg).encode(sys.stdout.encode)))
 
 # closure to check count of arguments
 def chkopt(i):
@@ -213,6 +219,18 @@ while i < len(sys.argv):
 		if verbose:
 			vprint('zipfile_encoding set to ' + zipfile_encoding)
 
+	elif arg == '-f':
+		value, i = chkopt(i)
+		filepath_encoding = value
+		if verbose:
+			vprint('filepath_encoding set to ' + filepath_encoding)
+
+	elif arg == '-c':
+		value, i = chkopt(i)
+		content_encoding = value
+		if verbose:
+			vprint('content_encoding set to ' + content_encoding)
+
 	# HTML argument is already checked
 	elif arg == '+h':
 		pass
@@ -220,14 +238,14 @@ while i < len(sys.argv):
 		pass
 
 	else:
-		if 3 <= sys.version_info[0]:
+		if is_v3:
 			path = arg
 			if verbose:
 				vprint('target path: ' + path)
 		else:
-			path = arg.decode('CP932')
+			path = arg.decode(filepath_encoding)
 			if verbose:
-				vprint('target path: ' + path.encode('CP932'))
+				vprint('target path: ' + path.encode(filename_encoding))
 
 	i += 1
 
@@ -283,8 +301,8 @@ class filer:
 
 class deffiler(filer):
 	def open(self, root, f):
-		if 3 <= sys.version_info[0]:
-			return open(os.path.join(root, f), encoding='latin-1')
+		if is_v3:
+			return open(os.path.join(root, f), encoding=content_encoding)
 		else:
 			return open(os.path.join(root, f))
 	def getsize(self, root, f):
@@ -316,6 +334,8 @@ def process_file_list(root, files, filer):
 			filepath = root + f
 		else:
 			filepath = root + os.sep + f
+		if not is_v3:
+			filepath = filepath.encode(filepath_encoding)
 		fp = filer.open(root, f)
 		linecount = 0
 		for line in fp:
