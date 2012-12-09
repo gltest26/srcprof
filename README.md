@@ -34,24 +34,25 @@ For example, running this program on git source distribution yields following ou
 	         Summary
 	--------------------------
 
-	.h: files = 133, lines = 16960, size = 568827
-	.c: files = 326, lines = 161450, size = 4311850
-	.py: files = 15, lines = 5634, size = 200733
-	total: files = 474, lines = 184044, size = 5081410
+	.h: files = 133, lines = 17030, size = 554683
+	.pl: files = 10, lines = 1444, size = 43388
+	.c: files = 330, lines = 162512, size = 4179957
+	.py: files = 16, lines = 5746, size = 199291
+	total: files = 489, lines = 186732, size = 4977319
 
 	--------------------------
 	      Top 10 files
 	--------------------------
 
-	5750: g:\projects\git\compat\nedmalloc/malloc.c.h
-	4873: g:\projects\git/diff.c
-	4454: g:\projects\git\builtin/apply.c
-	4369: g:\projects\git\compat\regex/regexec.c
-	3884: g:\projects\git\compat\regex/regcomp.c
-	3461: g:\projects\git/fast-import.c
-	3183: g:\projects\git/git-p4.py
-	2843: g:\projects\git/sha1_file.c
-	2642: g:\projects\git\builtin/blame.c
+	5750: h:\extprojs\git\compat\nedmalloc\malloc.c.h
+	4931: h:\extprojs\git\diff.c
+	4454: h:\extprojs\git\builtin\apply.c
+	4369: h:\extprojs\git\compat\regex\regexec.c
+	3884: h:\extprojs\git\compat\regex\regcomp.c
+	3461: h:\extprojs\git\fast-import.c
+	3242: h:\extprojs\git\git-p4.py
+	2837: h:\extprojs\git\sha1_file.c
+	2643: h:\extprojs\git\builtin\blame.c
 
 	--------------------------
 	      Distribution
@@ -64,20 +65,20 @@ For example, running this program on git source distribution yields following ou
 	    5-    7 8  :**************************************
 	    8-   10 13 :********************************************
 	   11-   15 13 :********************************************
-	   16-   21 25 :*****************************************************
-	   22-   31 30 :*******************************************************
+	   16-   21 24 :****************************************************
+	   22-   31 33 :********************************************************
 	   32-   44 28 :******************************************************
-	   45-   63 31 :*******************************************************
+	   45-   63 34 :*********************************************************
 	   64-   89 43 :************************************************************
-	   90-  127 35 :*********************************************************
-	  128-  180 37 :**********************************************************
-	  181-  255 32 :********************************************************
-	  256-  361 41 :***********************************************************
+	   90-  127 37 :**********************************************************
+	  128-  180 38 :**********************************************************
+	  181-  255 37 :**********************************************************
+	  256-  361 43 :************************************************************
 	  362-  511 33 :********************************************************
 	  512-  723 28 :******************************************************
-	  724- 1023 21 :**************************************************
-	 1024- 1447 23 :****************************************************
-	 1448- 2047 14 :*********************************************
+	  724- 1023 23 :****************************************************
+	 1024- 1447 20 :**************************************************
+	 1448- 2047 15 :**********************************************
 	 2048- 2895 6  :***********************************
 	 2896- 4095 3  :**************************
 	 4096- 5791 4  :******************************
@@ -86,6 +87,7 @@ For example, running this program on git source distribution yields following ou
 	11585-16383 0  :
 	16384-23169 0  :
 	23170-32767 0  :
+
 
 
 Options
@@ -121,13 +123,18 @@ The program has some option switches. The list of available options is viewed by
 	    -E enc  Set Zipfile entry file encoding to enc. (default CP932)
 	    +h      Enable HTML output
 	    -h      Disable HTML output (default)
-
+	    -w wid  Set distribution graph width in chars or pixels
+	            (non-html: default 60; html: default 200)
+	    -f enc  Set file path's character encoding. (default ascii)
+	            Setting this should only be necessary in Python 2.*.
+	    -c enc  Set file content's character encoding. Necessary to
+	            count up lines correctly. (default latin-1)
 
 	Default ignoredirs:
-	set(['.hg', '.svn'])
+	set(['.bzr', '.hg', '.git', '.svn'])
 	Default extensions:
-	set(['.h', '.cs', '.rc', '.rb', '.c', '.rci', '.dlg', '.py', '.cpp', '.dpr', '.p
-	as'])
+	set(['.h', '.pl', '.cs', '.rc', '.rb', '.c', '.rci', '.dlg', '.py', '.cpp', '.dp
+	r', '.pas'])
 
 
 Origin
