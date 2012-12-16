@@ -18,7 +18,7 @@ else:
 
 # Global settings
 ignoredirs = set(['.hg', '.svn', '.git', '.bzr']) # Probably we could ignore all directories beginning with a dot.
-extensions = set(['.pl', '.py', '.rb', '.c', '.cpp', '.h', '.rc', '.rci', '.dlg', '.pas', '.dpr', '.cs'])
+extensions = set(['.sh', '.js', '.tcl', '.pl', '.py', '.rb', '.c', '.cpp', '.h', '.rc', '.rci', '.dlg', '.pas', '.dpr', '.cs'])
 extstats = {}
 verbose = False
 listing = True
@@ -320,7 +320,10 @@ class zipfiler(filer):
 
 def process_file_list(root, files, filer):
 	for f in files:
-		ext = os.path.splitext(f)[1].lower()
+		splits = os.path.splitext(f)
+		ext = splits[1].lower()
+		if ext == '':
+			ext = splits[0]
 
 		matched = False
 		for srcext in extensions:
