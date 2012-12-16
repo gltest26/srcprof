@@ -31,6 +31,7 @@ enable_html = False
 dist_width = 60 # The width of distribution graph
 filepath_encoding = 'ascii' # I couldn't find a way to obtain file system's encoding, so here is the default.
 content_encoding = 'latin-1' # File content's encoding cannot be obtained in advance, so here is the default.
+hconv = lambda x: x # Defaults linear
 
 if len(sys.argv) < 2:
 	helpstr = "usage: [flags] " + sys.argv[0] + " path\n" +(
@@ -67,6 +68,9 @@ The flags can be combination of the following:
             Setting this should only be necessary in Python 2.*.
     -c enc  Set file content's character encoding. Necessary to
             count up lines correctly. (default {2})
+    --hscale (log/linear)
+            Sets the distribution graph's horizontal scale to
+            logarithmic or linear.
 
 """.format(zipfile_encoding, filepath_encoding, content_encoding))
 	helpstr += "Default ignoredirs:\n"
@@ -230,6 +234,15 @@ while i < len(sys.argv):
 		content_encoding = value
 		if verbose:
 			vprint('content_encoding set to ' + content_encoding)
+
+	elif arg == '--hscale':
+		value, i = chkopt(i)
+		if value == 'log':
+			hconv = lambda x: math.log(x+1)
+		elif value == 'linear':
+			hconv = lambda x: x
+		if verbose:
+			vprint('hscale set to ' + hscale)
 
 	# HTML argument is already checked
 	elif arg == '+h':
@@ -533,7 +546,7 @@ if enable_distrib:
 	for v in distrib[1:]:
 		if maxdirs < v:
 			maxdirs = v
-	maxdirs = math.log(maxdirs)+1
+	maxdirs = hconv(maxdirs)
 
 	if enable_html:
 		print("<h1>Distribution</h1>")
@@ -553,11 +566,11 @@ if enable_distrib:
 				int(pow(base, ((i - 1) * cell))),
 				int(pow(base, ((i) * cell))) - 1,
 				str(distrib[i]),
-				(int((math.log(distrib[i])+1) * dist_width / maxdirs)) if distrib[i] != 0 else 0,
+				(int(hconv(distrib[i]) * dist_width / maxdirs)) if distrib[i] != 0 else 0,
 				int(i * 255 / len(distrib)))))
 		else:
 			if 0 < maxdirs and i != 0 and distrib[i] != 0:
-				for j in range(int((math.log(distrib[i])+1) * dist_width / maxdirs)):
+				for j in range(int(hconv(distrib[i]) * dist_width / maxdirs)):
 					s += "*"
 
 			print(("{0:5}-{1:5} {2:3}".format(
